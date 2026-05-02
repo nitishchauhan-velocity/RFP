@@ -39,6 +39,7 @@ const RfpVendorQuotes = () => {
         total: quotesarray.length,
       };
     },
+    retry: 0,
     enabled: !!rfp_id,
     placeholderData: keepPreviousData,
   });

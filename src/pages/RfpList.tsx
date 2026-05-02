@@ -1,17 +1,13 @@
 import api from "@/api/api";
 import DataTable from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 // import { useAuthStore } from "@/store/authStore";
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   createColumnHelper,
   type PaginationState,
@@ -40,7 +36,7 @@ const RfpList = () => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const queryClient = useQueryClient();
   const closeRfp = useMutation({
-    mutationFn: async (id:number) => {
+    mutationFn: async (id: number) => {
       const res = await api.get(`/rfp/closerfp/${id}`);
       console.log(res.data);
       return res.data;
@@ -48,8 +44,8 @@ const RfpList = () => {
     onSuccess: (data) => {
       if (data.response == "success") {
         toast.success("RFP closed Successfully");
-        queryClient.invalidateQueries({ queryKey: ["rfps"] })
-        queryClient.invalidateQueries({ queryKey: ["Rfpforquotes"] })
+        queryClient.invalidateQueries({ queryKey: ["rfps"] });
+        queryClient.invalidateQueries({ queryKey: ["Rfpforquotes"] });
         navigate("/rfp-list");
       } else {
         toast.error(`${data.error}`);
@@ -123,38 +119,35 @@ const RfpList = () => {
       columnHelper.display({
         id: "Action",
         header: "Action",
-        cell: ({row}) => {
+        cell: ({ row }) => {
           const rfp = row.original;
+          const status = rfp.status;
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="" variant="outline">
-                  Open
+            <>
+              {status === "closed" ? (
+                <Button className=" cursor-pointer bg-transparent text-green-500">
+                  <Link to={`/rfp-list/rfp-quotes/${rfp.rfp_id}`}>Quotes</Link>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-40" align="start">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel></DropdownMenuLabel>
-                  <DropdownMenuItem
-                  onClick={() =>{
-                    const id:number = rfp?.rfp_id;
-                    closeRfp.mutate(id)
-                  }
-                  }
+              ) : (
+                <div className="flex gap-1">
+                  <Button
+                    className=" cursor-pointer bg-transparent text-red-500"
+                    onClick={() => {
+                      const id: number = rfp?.rfp_id;
+                      closeRfp.mutate(id);
+                    }}
                   >
                     Close RFP
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                  >
+                  </Button>
+                  <Button className="cursor-pointer bg-transparent text-green-500">
                     <Link to={`/rfp-list/rfp-quotes/${rfp.rfp_id}`}>
                       Quotes
                     </Link>
-                    
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  </Button>
+                </div>
+              )}
+             
+            </>
           );
         },
       }),
@@ -166,7 +159,10 @@ const RfpList = () => {
     <div className="p-6">
       <div className="flex justify-between">
         <h1 className="text-xl font-semibold mb-4">RFP List</h1>
-        <Button  className="bg-green-500" onClick={()=>navigate("/rfpselectcategory")}>
+        <Button
+          className="bg-green-500 cursor-pointer"
+          onClick={() => navigate("/rfpselectcategory")}
+        >
           +Add RFP
         </Button>
       </div>

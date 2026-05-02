@@ -37,6 +37,7 @@ const RfpQuotes = () => {
         total: res.data.quotes.length,
       };
     },
+    retry: 0,
     enabled: !!rfp_id,
     placeholderData: keepPreviousData,
   });

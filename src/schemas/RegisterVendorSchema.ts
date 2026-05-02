@@ -20,10 +20,14 @@ export const RegisterVendorSchema = z.object({
         .regex(/^\d+(\.\d+)?$/, "Must be a positive numeric string")
         .refine((val) => parseFloat(val) > 0, "Revenue must be greater than 0"),
     )
-    .length(3, "Last three years revenue required"),
+    .length(3, "Last three years revenue should be numbers and seperated by ',' "),
 
   no_of_employees: z.number().int().positive(),
-  category: z.string().trim().min(1,"Category is required"),
+  // category: z.string().trim().min(1,"Category is required"),
+  category: z
+    .array(z.string())
+    .min(1, "Select at least one category")
+    .transform((arr) => arr.join(",")),
   pancard_no: z
     .string()
     .trim()
@@ -36,3 +40,4 @@ export const RegisterVendorSchema = z.object({
 });
 
 export type RegisterVendorData = z.input<typeof RegisterVendorSchema>;
+export type  RegisterVendorDataOutput = z.output<typeof RegisterVendorSchema>;

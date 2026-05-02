@@ -1,6 +1,7 @@
 import api from "@/api/api";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxContent, ComboboxEmpty, ComboboxItem, ComboboxList, ComboboxValue } from "@/components/ui/combobox";
 import {
   Field,
   FieldError,
@@ -11,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import {
   CreateRfpSchema,
   type CreateRfpFormData,
+  type CreateRfpFormDataOutput,
 } from "@/schemas/CreateRfpSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -18,10 +20,11 @@ import { useEffect, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import type { Vendor } from "./VendorsList";
 
 const CreateRfp = () => {
   const queryClient = useQueryClient();
-  const [vendors, setVendors] = useState([]);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
   useEffect(() => {
     const getVendors = async () => {
       try {
@@ -39,7 +42,7 @@ const CreateRfp = () => {
   const { category_id } = useParams();
   const endofToday = new Date();
   endofToday.setHours(23, 59, 59, 999);
-  const form = useForm<CreateRfpFormData>({
+  const form = useForm<CreateRfpFormData,unknown,CreateRfpFormDataOutput>({
     resolver: zodResolver(CreateRfpSchema),
     mode: "onChange",
     defaultValues: {
@@ -50,12 +53,12 @@ const CreateRfp = () => {
       minimum_price: 0,
       maximum_price: 0,
       categories: category_id,
-      vendors: "",
+      vendors: [],
       item_description: "",
     },
   });
   const { mutate, isPending, isError } = useMutation({
-    mutationFn: async (data: CreateRfpFormData) => {
+    mutationFn: async (data: CreateRfpFormDataOutput) => {
       const res = await api.post("/createrfp", data);
       return res.data;
     },
@@ -73,7 +76,7 @@ const CreateRfp = () => {
       toast.error(`${err.message}`);
     },
   });
-  const onSubmit: SubmitHandler<CreateRfpFormData> = async (formData) => {
+  const onSubmit: SubmitHandler<CreateRfpFormDataOutput> = async (formData) => {
     mutate(formData);
   };
   const canclehandler = () => {
@@ -147,7 +150,9 @@ const CreateRfp = () => {
                         value={
                           field.value instanceof Date
                             ? field.value.toLocaleDateString('en-CA')
-                            : field.value || ""
+                             : typeof field.value === "string"
+                            ? field.value 
+                            :""
                         }
                         placeholder="last date"
                         onChange={field.onChange}
@@ -200,33 +205,62 @@ const CreateRfp = () => {
                 />
               </div>
             </div>
-
             <Controller
-              name="vendors"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>Vendor</FieldLabel>
+                  name="vendors"
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    const selectedValues: string[] = field.value || [];
 
-                  <select
-                    {...field}
-                    value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    className="border p-1.5 rounded mb-2"
-                  >
-                    <option value="">Select Vendor</option>
-                    {vendors?.map((ven: any) => (
-                      <option key={ven.user_id} value={String(ven.user_id)}>
-                        {ven.name}
-                      </option>
-                    ))}
-                  </select>
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+                    return (
+                      <Field>
+                        <FieldLabel>Vendor</FieldLabel>
+
+                        <Combobox
+                          items={vendors || []}
+                          multiple
+                          value={selectedValues}
+                          onValueChange={(val) => field.onChange(val)}
+                        >
+                          <ComboboxChips>
+                            <ComboboxValue>
+                              {selectedValues.map((val) => {
+                                const ven = vendors?.find(
+                                  (v: any) => String(v.user_id) === val,
+                                );
+
+                                return (
+                                  <ComboboxChip key={val}>
+                                    {ven?.name  || val}
+                                  </ComboboxChip>
+                                );
+                              })}
+                            </ComboboxValue>
+                            <ComboboxChipsInput placeholder="Select Category" />
+                          </ComboboxChips>
+                          <ComboboxContent className="max-h-60 overflow-y-auto">
+                            <ComboboxEmpty>No Vendors found.</ComboboxEmpty>
+                            <ComboboxList>
+                              {(item: any) => (
+                                <ComboboxItem
+                                  key={item.user_id}
+                                  value={String(item.user_id)}
+                                >
+                                  {item.name}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+
+                        {fieldState.error && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+
+
             <Controller
               name="item_description"
               control={form.control}
@@ -241,14 +275,16 @@ const CreateRfp = () => {
               )}
             />
           </FieldGroup>
+          <div className=" cursor-pointer flex gap-4">
           <Button
             type="submit"
             disabled={!form.formState.isValid || isPending}
-            className="disabled:opacity-50"
+            className="disabled:opacity-50 bg-blue-500"
           >
             {isPending ? "Submitting..." : "Submit"}
           </Button>
-          <Button onClick={() => canclehandler()}>cancel</Button>
+          <Button className="cursor-pointer" onClick={() => canclehandler()}>cancel</Button>
+          </div>
         </Card>
       </form>
     </div>

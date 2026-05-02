@@ -103,14 +103,16 @@ const ApplyRfp = () => {
                   )}
                 />
           </FieldGroup>
+          <div className="flex gap-4">
           <Button
             type="submit"
             disabled={!form.formState.isValid || isPending}
-            className="disabled:opacity-50"
+            className=" cursor-pointer disabled:opacity-50 bg-blue-500"
           >
             {isPending ? "Submitting..." : "Submit"}
           </Button>
-          <Button onClick={() => canclehandler()}>cancel</Button>
+          <Button className="cursor-pointer" onClick={() => canclehandler()}>cancel</Button>
+          </div>
         </Card>
       </form>
     </div>

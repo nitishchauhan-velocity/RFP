@@ -10,12 +10,12 @@ const Navbar = () => {
           {user ? (
             <div className="flex gap-10 my-2 w-full h-10">
               <div>
-                <span>Welcome,{user.name}</span>
+                <span>Welcome,   <span className="ml-1">{user.name}</span></span>
               </div>
               <div>
                 <Link to="/login">
                   <button
-                    className="text-blue-400 hover:underline"
+                    className=" cursor-pointer text-blue-400 hover:underline"
                     onClick={logOut}
                   >
                     Logout

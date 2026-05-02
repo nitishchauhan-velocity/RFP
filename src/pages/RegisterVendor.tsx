@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import {
   RegisterVendorSchema,
   type RegisterVendorData,
+  type RegisterVendorDataOutput,
 } from "@/schemas/RegisterVendorSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -19,9 +20,20 @@ import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import type { Category } from "./Categories";
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+} from "@/components/ui/combobox";
 const RegisterVendor = () => {
   const navigate = useNavigate();
-  const form = useForm<RegisterVendorData>({
+  const form = useForm<RegisterVendorData, unknown, RegisterVendorDataOutput>({
     resolver: zodResolver(RegisterVendorSchema),
     mode: "onChange",
     defaultValues: {
@@ -30,7 +42,7 @@ const RegisterVendor = () => {
       email: "",
       password: "",
       revenue: [],
-      category: "",
+      category: [],
       no_of_employees: 0,
       pancard_no: "",
       gst_no: "",
@@ -53,7 +65,7 @@ const RegisterVendor = () => {
     getCategories();
   }, []);
   const { mutate, isPending, isError } = useMutation({
-    mutationFn: async (data: RegisterVendorData) => {
+    mutationFn: async (data: RegisterVendorDataOutput) => {
       const payload = {
         ...data,
         revenue: data.revenue.join(","),
@@ -62,6 +74,7 @@ const RegisterVendor = () => {
       return res.data;
     },
     onSuccess: (data) => {
+      console.log(data);
       if (data.response == "success") {
         toast.success("Vendor Register Successfully");
         navigate("/login");
@@ -75,8 +88,11 @@ const RegisterVendor = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<RegisterVendorData> = async (formData) => {
-     mutate(formData);
+  const onSubmit: SubmitHandler<RegisterVendorDataOutput> = async (
+    formData,
+  ) => {
+    console.log(formData);
+    mutate(formData);
   };
 
   if (isError) {
@@ -178,35 +194,62 @@ const RegisterVendor = () => {
                 <Controller
                   name="category"
                   control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field>
-                      <FieldLabel>Category</FieldLabel>
+                  render={({ field, fieldState }) => {
+                    const selectedValues: string[] = field.value || [];
 
-                      <select
-                        {...field}
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        className="border p-1.5 rounded mb-2"
-                        size={5} 
-                      >
-                        <option value="">Select Category</option>
-                        {categories?.map((cat:any) => (
-                          <option key={cat.id} value={String(cat.id)}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
-                      {fieldState.error && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
+                    return (
+                      <Field>
+                        <FieldLabel>Category</FieldLabel>
+
+                        <Combobox
+                          items={categories || []}
+                          multiple
+                          value={selectedValues}
+                          onValueChange={(val) => field.onChange(val)}
+                        >
+                          <ComboboxChips>
+                            <ComboboxValue>
+                              {selectedValues.map((val) => {
+                                const cat = categories?.find(
+                                  (c: any) => String(c.id) === val,
+                                );
+
+                                return (
+                                  <ComboboxChip key={val}>
+                                    {cat?.name || val}
+                                  </ComboboxChip>
+                                );
+                              })}
+                            </ComboboxValue>
+                            <ComboboxChipsInput placeholder="Select Category" />
+                          </ComboboxChips>
+                          <ComboboxContent className="max-h-60 overflow-y-auto">
+                            <ComboboxEmpty>No categories found.</ComboboxEmpty>
+                            <ComboboxList>
+                              {(item: any) => (
+                                <ComboboxItem
+                                  key={item.id}
+                                  value={String(item.id)}
+                                >
+                                  {item.name}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+
+                        {fieldState.error && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    );
+                  }}
                 />
                 <Controller
                   name="no_of_employees"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <Field>
+                    <Field className="mt-2">
                       <FieldLabel>No of Employees</FieldLabel>
                       <Input
                         value={field.value ?? ""}
@@ -264,10 +307,10 @@ const RegisterVendor = () => {
           </FieldGroup>
           <Button
             type="submit"
-            disabled={!form.formState.isValid||isPending}
+            disabled={!form.formState.isValid || isPending}
             className="disabled:opacity-50"
           >
-            {isPending?"Submitting...":"Submit"}
+            {isPending ? "Submitting..." : "Submit"}
           </Button>
           <div className="flex w-full justify-between text-sm">
             <span

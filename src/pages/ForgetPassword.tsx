@@ -79,7 +79,7 @@ const ForgetPassword = () => {
           <Button
             type="submit"
             disabled={!form.formState.isValid||isPending}
-            className="disabled:opacity-50"
+            className=" cursor-pointer disabled:opacity-50"
           >
             {isPending?"Submitting...":"Submit"}
           </Button>

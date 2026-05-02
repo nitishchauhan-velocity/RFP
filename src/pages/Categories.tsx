@@ -10,24 +10,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { AddCategorySchema, type AddCategoryFormData } from "@/schemas/AddCategory";
+import {
+  AddCategorySchema,
+  type AddCategoryFormData,
+} from "@/schemas/AddCategory";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   createColumnHelper,
   type PaginationState,
@@ -43,16 +42,24 @@ export type Category = {
   name: string;
   status: "Active" | "Inactive";
 };
+type UpdateCategoryPayload = {
+  name:string,
+  status:0|1
+}
+type UpdateCategoryInput = {
+  id: number;
+  data: UpdateCategoryPayload;
+};
 const columnHelper = createColumnHelper<Category>();
 const Categories = () => {
-    const queryClient = useQueryClient();
-    // const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  // const navigate = useNavigate();
   const [Open, setOpen] = useState(false);
   const form = useForm<AddCategoryFormData>({
     resolver: zodResolver(AddCategorySchema),
     mode: "onChange",
     defaultValues: {
-        name:""
+      name: "",
     },
   });
   const { mutate } = useMutation({
@@ -64,9 +71,8 @@ const Categories = () => {
     onSuccess: (data) => {
       if (data.response == "success") {
         toast.success("Category Added Successfully");
-        queryClient.invalidateQueries({ queryKey: ["categories"] })
+        queryClient.invalidateQueries({ queryKey: ["categories"] });
         // navigate("/categories");
-
       } else {
         toast.error(`${data.error}`);
       }
@@ -77,11 +83,10 @@ const Categories = () => {
     },
   });
 
-  
   const onSubmit: SubmitHandler<AddCategoryFormData> = async (formData) => {
-      // console.log(formData);
-        await mutate(formData);
-    };
+    // console.log(formData);
+    await mutate(formData);
+  };
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -103,6 +108,24 @@ const Categories = () => {
       };
     },
     placeholderData: keepPreviousData,
+  });
+  const updateCategory = useMutation({
+    mutationFn: async ({id,data}:UpdateCategoryInput) => {
+      const res = await api.put(`categories/${id}`, data);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data.response == "success") {
+        toast.success("Category updated Successfully");
+        
+      } else {
+        toast.error(`${data.errors}`);
+      }
+    },
+    onError: (error) => {
+      toast.error("Failed to update category");
+      console.error(error);
+    },
   });
   const CategoryColumns = useMemo(
     () => [
@@ -138,42 +161,43 @@ const Categories = () => {
       columnHelper.display({
         id: "Action",
         header: "Action",
-        cell: () => {
-          //   const category = row.original;
+        cell: ({ row }) => {
+          const category = row.original;
+          const status = category.status;
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="" variant="outline">
-                  Open
+            <>
+              {status === "Active" ? (
+                <Button
+                className=" cursor-pointer"
+                  onClick={() =>
+                    updateCategory.mutate({
+                      id: category.id,
+                      data: {
+                        name: category.name,
+                        status: 0,
+                      },
+                    })
+                  }
+                >
+                  Inactive
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-40" align="start">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel></DropdownMenuLabel>
-                  <DropdownMenuItem
-                  // onClick={() =>
-                  //   updateVendor.mutate({
-                  //     user_id: vendor.user_id,
-                  //     status: "Approved",
-                  //   })
-                  // }
-                  >
-                    Active
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                  // onClick={() =>
-                  //   updateVendor.mutate({
-                  //     user_id: vendor.user_id,
-                  //     status: "Rejected",
-                  //   })
-                  // }
-                  >
-                    Inactive
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              ) : (
+                <Button
+                className=" cursor-pointer"
+                  onClick={() =>
+                    updateCategory.mutate({
+                      id: category.id,
+                      data: {
+                        name: category.name,
+                        status: 1,
+                      },
+                    })
+                  }
+                >
+                  Active
+                </Button>
+              )}
+            </>
           );
         },
       }),
@@ -219,9 +243,13 @@ const Categories = () => {
             </FieldGroup>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button className="cursor-pointer" variant="outline">
+                  Cancel
+                </Button>
               </DialogClose>
-              <Button type="submit">Submit</Button>
+              <Button className="cursor-pointer" type="submit">
+                Submit
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

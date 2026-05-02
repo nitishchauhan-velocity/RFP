@@ -16,6 +16,13 @@ import {
 } from "@/schemas/AddRfpListSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 const RfpSelectCategory = () => {
   const navigate = useNavigate();
@@ -47,9 +54,9 @@ const RfpSelectCategory = () => {
   ) => {
     navigate(`/rfpcreate/${formData.categories}`);
   };
-  const canclehandler=()=>{
+  const canclehandler = () => {
     navigate(-1);
-  }
+  };
   return (
     <div className="px-80 py-10 w-full flex flex-col mx-auto">
       <form className="" onSubmit={form.handleSubmit(onSubmit)}>
@@ -62,21 +69,21 @@ const RfpSelectCategory = () => {
               render={({ field, fieldState }) => (
                 <Field>
                   <FieldLabel>Category</FieldLabel>
-
-                  <select
-                    {...field}
+                  <Select
                     value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    className="border p-1.5 rounded mb-2"
-                    size={10}
+                    onValueChange={(val) => field.onChange(val)}
                   >
-                    <option value="">Select Category</option>
-                    {categories?.map((cat: any) => (
-                      <option key={cat.id} value={String(cat.id)}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-30">
+                      {categories?.map((cat: any) => (
+                        <SelectItem key={cat.id} value={String(cat.id)}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {fieldState.error && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -92,7 +99,7 @@ const RfpSelectCategory = () => {
             >
               Submit
             </Button>
-            <Button onClick={()=>canclehandler()}>cancel</Button>
+            <Button onClick={() => canclehandler()}>cancel</Button>
           </div>
         </Card>
       </form>

@@ -15,7 +15,7 @@ import {
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
-type Vendor = {
+export type Vendor = {
   user_id: number;
   name: string;
   email: string;
@@ -29,6 +29,7 @@ type UpdateVendorPayload = {
 const columnHelper = createColumnHelper<Vendor>();
 
 const VendorsList = () => {
+  const [loadingId,setLoadingId] = useState<number | null>(null);
   const queryClient = useQueryClient();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -103,25 +104,39 @@ const VendorsList = () => {
           const status = vendor.status;
           return (
             <>
-            {status==="Approved" ?(<></>):(<Button className="bg-transparent text-lg text-green-500 " onClick={()=>
-              updateVendor.mutate({
-                user_id:vendor.user_id,
-                status:"Approved"
-              })
-            }>
-              Approve
-            </Button>)}
+              {status === "Approved" ? (
+                <></>
+              ) : (
+                <Button
+                  className=" cursor-pointer bg-transparent text-lg text-green-500 "
+                  onClick={() =>{
+                    setLoadingId(vendor.user_id);
+                    updateVendor.mutate({
+                      user_id: vendor.user_id,
+                      status: "Approved",
+                    },{
+                  onSettled: () => setLoadingId(null),
+
+                })
+                  }}
+                >
+                  {updateVendor.isPending &&loadingId===vendor.user_id
+                    ? "Approving..."
+                    : "Approve"}
+                </Button>
+              )}
             </>
           );
         },
       }),
     ],
-    [],
+    [updateVendor.isPending],
   );
   if (isLoading) return <div>Loading vendors...</div>;
   return (
     <div className="p-6">
       <h1 className="text-xl font-semibold mb-4">Vendor List</h1>
+      
       <DataTable<Vendor>
         columns={VendorColumns}
         data={data?.data || []}

@@ -61,7 +61,6 @@ const RegisterVendor = () => {
         console.error("Error fetching categories:", error);
       }
     };
-    // console.log(categories);
     getCategories();
   }, []);
   const { mutate, isPending, isError } = useMutation({

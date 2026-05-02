@@ -31,7 +31,6 @@ const ForgetPassword = () => {
   const { mutate, isPending, isError } = useMutation({
     mutationFn: async (data: ForgetPasswordData) => {
       const res = await api.post("/forgetPassword", data);
-      console.log(res.data);
       return res.data;
     },
     onSuccess: (data) => {

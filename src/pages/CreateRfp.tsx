@@ -35,7 +35,6 @@ const CreateRfp = () => {
         console.error("Error fetching categories:", error);
       }
     };
-    // console.log(vendors);
     getVendors();
   }, []);
   const navigate = useNavigate();

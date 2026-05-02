@@ -1,7 +1,7 @@
 import api from "@/api/api";
 import DataTable from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
-// import { useAuthStore } from "@/store/authStore";
+
 import {
   keepPreviousData,
   useMutation,
@@ -27,7 +27,6 @@ type Rfp = {
 };
 const columnHelper = createColumnHelper<Rfp>();
 const RfpList = () => {
-  // const {user} = useAuthStore();
   const navigate = useNavigate();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -38,7 +37,6 @@ const RfpList = () => {
   const closeRfp = useMutation({
     mutationFn: async (id: number) => {
       const res = await api.get(`/rfp/closerfp/${id}`);
-      console.log(res.data);
       return res.data;
     },
     onSuccess: (data) => {
@@ -56,7 +54,6 @@ const RfpList = () => {
       toast.error(`${err.message}`);
     },
   });
-  // const [Open, setOpen] = useState(false);
   const { data, isLoading } = useQuery<{
     data: Rfp[];
     total: number;
@@ -64,8 +61,6 @@ const RfpList = () => {
     queryKey: ["rfps"],
     queryFn: async () => {
       const res = await api.get("/rfp/all");
-      // const res = await api.get(`rfp/getrfp/${user?.id}`)
-      // console.log(res);
       return {
         data: res.data.rfps,
         total: res.data.rfps.length,

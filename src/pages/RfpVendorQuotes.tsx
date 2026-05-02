@@ -30,7 +30,6 @@ const RfpVendorQuotes = () => {
     queryKey: ["vendors", rfp_id],
     queryFn: async () => {
       const res = await api.get(`/rfp/quotes/${rfp_id}`);
-      console.log(res);
       const quotesobj = res.data;
       const quotesarray = [quotesobj.quote]
       return {

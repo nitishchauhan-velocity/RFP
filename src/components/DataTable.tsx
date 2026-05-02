@@ -80,7 +80,7 @@ const DataTable = <T,>({
         </table>
         <div className="flex items-center justify-center gap-14 mt-3">
           <button className="cursor-pointer" onClick={() => table.previousPage()}>Prev</button>
-          <button className="cursor-pointer" onClick={() => table.nextPage()}>Next</button>
+          <button className="cursor-pointer" disabled={!table.getCanNextPage()}  onClick={() => table.nextPage()}>Next</button>
         </div>
       </div>
     </div>

@@ -35,7 +35,7 @@ import {
 import { useMemo, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export type Category = {
   id: number;
@@ -52,8 +52,8 @@ type UpdateCategoryInput = {
 };
 const columnHelper = createColumnHelper<Category>();
 const Categories = () => {
+  const navigate  = useNavigate();
   const queryClient = useQueryClient();
-  // const navigate = useNavigate();
   const [Open, setOpen] = useState(false);
   const form = useForm<AddCategoryFormData>({
     resolver: zodResolver(AddCategorySchema),
@@ -72,7 +72,6 @@ const Categories = () => {
       if (data.response == "success") {
         toast.success("Category Added Successfully");
         queryClient.invalidateQueries({ queryKey: ["categories"] });
-        // navigate("/categories");
       } else {
         toast.error(`${data.error}`);
       }
@@ -84,7 +83,6 @@ const Categories = () => {
   });
 
   const onSubmit: SubmitHandler<AddCategoryFormData> = async (formData) => {
-    // console.log(formData);
     await mutate(formData);
   };
 

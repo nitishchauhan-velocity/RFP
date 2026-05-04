@@ -244,7 +244,7 @@ const CreateRfp = () => {
                                   key={item.user_id}
                                   value={String(item.user_id)}
                                 >
-                                  {item.name}
+                                  {item.name} ({item.email})
                                 </ComboboxItem>
                               )}
                             </ComboboxList>
